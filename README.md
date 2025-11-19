@@ -10,6 +10,16 @@ go get github.com/slicervm/sdk@latest
 
 ### Example usage
 
+Create a new slicer config:
+
+```bash
+slicer new api \
+    --count=0 \
+    --graceful-shutdown=false \
+    --ram 4 \
+    --cpu 2 > api.yaml
+```
+
 Create a VM (node) in a host group with the default RAM/CPU settings as defined in the host group.
 
 ```go
@@ -18,7 +28,6 @@ package main
 import (
     "fmt"
     "os"
-    "net/http"
     sdk "github.com/slicervm/sdk"
 )
 
@@ -27,19 +36,21 @@ func main() {
     baseURL := os.Getenv("SLICER_URL")      // API base URL
     token := os.Getenv("SLICER_TOKEN")      // Your API token
     userAgent := "my-microvm-client/1.0"
-    hostGroup := "vm"                       // Existing host group name
+    hostGroup := "api"                       // Existing host group name
 
     client := sdk.NewSlicerClient(baseURL, token, userAgent, nil /* or &http.Client{} */)
 
     createReq := sdk.SlicerCreateNodeRequest{
         RAMGB:      4,
         CPUs:       2,
-        ImportUser: "alexellis", // Import GitHub keys for a specific user
         Userdata: `#!/bin/bash
 echo 'Bootstrapping...'
 ping -c3 google.com
+
+sudo reboot
 `,
         SSHKeys: []string{"ssh-rsa AAAA..."}, // Optional: inject public SSH keys
+        ImportUser: "alexellis", // Optional: Import GitHub keys for a specific user
     }
 
     res, err := client.CreateNode(hostGroup, createReq)
@@ -51,6 +62,20 @@ ping -c3 google.com
     fmt.Printf("Parsed IP only: %s\n", res.IPAddress())
 }
 ```
+
+Start Slicer:
+
+```bash
+sudo -E slicer up ./api.yaml
+```
+
+Run the program i.e. after running `go build -o client main.go`:
+
+```bash
+SLICER_URL=http://127.0.0.1:8080 SLICER_TOKEN="$(sudo cat /var/lib/slicer/auth/token)" ./client
+```
+
+You'll find the logs for the microVM at `/var/log/slicer/HOSTNAME.txt`, showing the userdata executing.
 
 Notes:
 
