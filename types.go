@@ -10,6 +10,7 @@ type SlicerNode struct {
 	Hostname  string `json:"hostname"`
 	IP        string `json:"ip"`
 	CreatedAt string `json:"created_at"`
+	Arch      string `json:"arch,omitempty"`
 }
 
 // SlicerCreateNodeRequest is the payload for creating a node via the REST API.
@@ -28,6 +29,7 @@ type SlicerCreateNodeResponse struct {
 	Hostname  string `json:"hostname"`
 	IP        string `json:"ip"`
 	CreatedAt string `json:"created_at"`
+	Arch      string `json:"arch,omitempty"`
 }
 
 func (n *SlicerCreateNodeResponse) IPAddress() net.IP {
@@ -44,5 +46,5 @@ type SlicerHostGroup struct {
 	Count int    `json:"count"`
 	RAMGB int    `json:"ram_gb"`
 	VCPU  int    `json:"vcpu"`
+	Arch  string `json:"arch,omitempty"`
 }
-
