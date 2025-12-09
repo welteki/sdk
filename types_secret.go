@@ -1,5 +1,7 @@
 package slicer
 
+import "time"
+
 // Secret represents a secret stored in the slicer system.
 // Secrets can be used to store sensitive configuration data, keys, or other private information
 // that can be mounted into nodes or used by services.
@@ -18,6 +20,9 @@ type Secret struct {
 	// GID is the group ID that should own the secret file. If not set, the default for
 	// a uint32 will be used i.e root.
 	GID uint32 `json:"gid,omitempty"`
+
+	// ModifiedAt is the time the secret was last modified
+	ModifiedAt *time.Time `json:"modified_at,omitempty"`
 }
 
 // CreateSecretRequest is the payload for creating a new secret via the REST API.
