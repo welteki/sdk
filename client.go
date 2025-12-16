@@ -458,7 +458,7 @@ func (c *SlicerClient) CpToVM(ctx context.Context, vmName, localPath, vmPath str
 // with proper renaming logic (supports renaming files/directories).
 // If uid or gid are 0, the current user's UID/GID will be used.
 // On Windows, chown operations are skipped (uid/gid are ignored).
-func (c *SlicerClient) CpFromVM(ctx context.Context, vmName, vmPath, localPath string, uid, gid uint32, permissions, mode string) error {
+func (c *SlicerClient) CpFromVM(ctx context.Context, vmName, vmPath, localPath string, permissions, mode string) error {
 
 	switch mode {
 	default:
