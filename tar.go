@@ -260,7 +260,7 @@ func ExtractTarToPath(ctx context.Context, r io.Reader, dest string, uid, gid ui
 	}
 
 	// Extract directly to extractDir
-	if err := extractTarStream(ctx, r, extractDir, uid, gid); err != nil {
+	if err := ExtractTarStream(ctx, r, extractDir, uid, gid); err != nil {
 		return fmt.Errorf("failed to extract tar: %w", err)
 	}
 
