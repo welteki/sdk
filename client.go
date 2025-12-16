@@ -464,9 +464,9 @@ func (c *SlicerClient) CpFromVM(ctx context.Context, vmName, vmPath, localPath s
 	default:
 		return fmt.Errorf("invalid mode: %s", mode)
 	case "tar":
-		return copyFromVMTar(ctx, c, vmName, vmPath, localPath, uid, gid)
+		return copyFromVMTar(ctx, c, vmName, vmPath, localPath)
 	case "binary":
-		return copyFromVMBinary(ctx, c, vmName, vmPath, localPath, uid, gid, permissions)
+		return copyFromVMBinary(ctx, c, vmName, vmPath, localPath, permissions)
 	}
 
 }

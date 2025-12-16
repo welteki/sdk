@@ -152,7 +152,7 @@ func copyToVMTar(ctx context.Context, c *SlicerClient, absSrc, vmName, vmPath st
 	return nil
 }
 
-func copyFromVMTar(ctx context.Context, c *SlicerClient, vmName, vmPath, localPath string, uid, gid uint32) error {
+func copyFromVMTar(ctx context.Context, c *SlicerClient, vmName, vmPath, localPath string) error {
 	q := url.Values{}
 	q.Set("path", vmPath)
 
@@ -185,16 +185,12 @@ func copyFromVMTar(ctx context.Context, c *SlicerClient, vmName, vmPath, localPa
 		return fmt.Errorf("failed to copy from VM: %s: %s", res.Status, string(body))
 	}
 
-	// Get current user's UID/GID if not specified
-	// On Windows, this will be 0,0 and chown will be skipped
-	if uid == 0 && gid == 0 {
-		uid, gid = getCurrentUIDGID()
-	}
+	uid, gid := getCurrentUIDGID()
 
 	return ExtractTarToPath(ctx, res.Body, localPath, uid, gid)
 }
 
-func copyFromVMBinary(ctx context.Context, c *SlicerClient, vmName, vmPath, localPath string, uid, gid uint32, permissions string) error {
+func copyFromVMBinary(ctx context.Context, c *SlicerClient, vmName, vmPath, localPath string, permissions string) error {
 	fileMode := os.FileMode(0600)
 	if len(permissions) > 0 {
 		permUint, err := strconv.ParseUint(permissions, 8, 32)
@@ -218,8 +214,6 @@ func copyFromVMBinary(ctx context.Context, c *SlicerClient, vmName, vmPath, loca
 	u.Path = fmt.Sprintf("/vm/%s/cp", vmName)
 	q := url.Values{}
 	q.Set("path", vmPath)
-	q.Set("uid", strconv.FormatUint(uint64(uid), 10))
-	q.Set("gid", strconv.FormatUint(uint64(gid), 10))
 
 	u.RawQuery = q.Encode()
 
