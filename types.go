@@ -147,3 +147,20 @@ type SlicerCreateVMRequest struct {
 	Tags       []string `json:"tags,omitempty"`
 	Secrets    []string `json:"secrets,omitempty"`
 }
+
+type SlicerAgentHealthResponse struct {
+	// Hostname is the hostname of the agent
+	Hostname string `json:"hostname,omitempty"`
+
+	// Uptime is the uptime of the agent
+	AgentUptime time.Duration `json:"agent_uptime,omitempty"`
+
+	// AgentVersion is the version of the agent
+	AgentVersion string `json:"agent_version,omitempty"`
+
+	// SystemUptime is the uptime of the system
+	SystemUptime time.Duration `json:"system_uptime,omitempty"`
+
+	// UserdataRan indicates whether the user data script has completed executing
+	UserdataRan bool `json:"userdata_ran,omitempty"`
+}
