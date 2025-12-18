@@ -1,1 +1,7 @@
-redirect: https://raw.githubusercontent.com/openfaas/faas/master/.DEREK.yml
+curators:
+ - alexellis
+ - welteki
+
+features:
+ - dco_check
+ - release_notes
