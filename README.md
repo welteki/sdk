@@ -17,9 +17,7 @@ go get github.com/slicervm/sdk@latest
 - **Port Forwarding**: Bidirectional port forwarding with support for TCP ports and UNIX sockets.
 - **Pause/Resume**: Pause VM CPU usage, then resume instantly when needed.
 
-### New in Latest Release
-
-#### Port Forwarding with UNIX Sockets
+### Port Forwarding with UNIX Sockets
 
 Bidirectional port forwarding now supports UNIX sockets on either side or both. Forward local or remote TCP ports and UNIX sockets in any combination.
 
