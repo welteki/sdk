@@ -10,10 +10,57 @@ go get github.com/slicervm/sdk@latest
 
 ### Features
 
-- **VM Management**: Create, list, and delete VMs.
+- **VM Management**: Create, list, delete, pause, and resume VMs.
 - **Execute Commands in VMs**: Run commands in VMs and stream command output (stdout/stderr).
 - **File Management**: Upload and download files to/from VMs with `CpToVM` and `CpFromVM`.
 - **Secret Management**: Securely manage secrets like API keys or other sensitive information for VMs.
+- **Port Forwarding**: Bidirectional port forwarding with support for TCP ports and UNIX sockets.
+- **Pause/Resume**: Pause VM CPU usage, then resume instantly when needed.
+
+### New in Latest Release
+
+#### Port Forwarding with UNIX Sockets
+
+Bidirectional port forwarding now supports UNIX sockets on either side or both. Forward local or remote TCP ports and UNIX sockets in any combination.
+
+For now you need to use the CLI and an "exec" to access port-forwarding.
+
+You can also use SSH tunnels via Go code, if you have SSH in your microVMs.
+
+**Supported on**: Linux, Darwin, and WSL.
+
+### Pause and Resume VMs
+
+Control VM CPU usage with instant pause/resume:
+
+```go
+// Pause a VM
+err := client.PauseVM(ctx, "vm-1")
+
+// Resume a VM
+err := client.ResumeVM(ctx, "vm-1")
+```
+
+### SDK Methods Reference
+
+| Method | Description |
+|--------|-------------|
+| `CreateVM(ctx, groupName, request)` | Create a new VM in a host group |
+| `DeleteVM(groupName, vmName)` | Delete a VM |
+| `ListVMs(ctx)` | List all VMs across all host groups |
+| `GetVMStats(ctx, hostname)` | Get CPU, memory, and disk statistics for a VM |
+| `GetVMLogs(ctx, hostname)` | Get recent logs from a VM |
+| `PauseVM(ctx, hostname)` | Pause a running VM to save CPU cost |
+| `ResumeVM(ctx, hostname)` | Resume a paused VM |
+| `Exec(ctx, hostname, request)` | Execute a command in a VM and stream output |
+| `CpToVM(ctx, hostname, sourcePath, destPath)` | Upload a file/directory to a VM |
+| `CpFromVM(ctx, hostname, sourcePath, destPath)` | Download a file/directory from a VM |
+| `Shutdown(ctx, hostname, action)` | Shutdown or reboot a VM |
+| `GetAgentHealth(ctx, hostname, includeStats)` | Check VM agent health and optionally get system stats |
+| `CreateSecret(ctx, request)` | Create a secret for VMs to use |
+| `ListSecrets(ctx)` | List all secrets (metadata only, not values) |
+| `PatchSecret(ctx, secretName, request)` | Update an existing secret |
+| `DeleteSecret(ctx, secretName)` | Delete a secret |
 
 ### Documentation
 
