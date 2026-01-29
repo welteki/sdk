@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -29,18 +30,52 @@ type SlicerClient struct {
 	baseURL    string
 	token      string
 	userAgent  string
+	unixSocket string // Path to Unix socket if using Unix socket transport
+}
+
+// isUnixSocketPath checks if the given path is a Unix socket path
+func isUnixSocketPath(path string) bool {
+	return strings.HasPrefix(path, "/") || strings.HasPrefix(path, "./")
 }
 
 // NewSlicerClient creates a new Slicer API client
+// If baseURL is a Unix socket path (starts with "/" or "./"), it will create
+// a custom HTTP client that uses Unix socket transport.
 func NewSlicerClient(baseURL, token string, userAgent string, httpClient *http.Client) *SlicerClient {
-	if httpClient == nil {
-		httpClient = http.DefaultClient
+	var unixSocket string
+	var client *http.Client
+
+	if isUnixSocketPath(baseURL) {
+		// Unix socket path detected
+		unixSocket = baseURL
+		// Use http://unix as the base URL (standard pattern for Unix socket HTTP clients)
+		baseURL = "http://unix"
+
+		// Create custom transport for Unix socket
+		transport := &http.Transport{
+			DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
+				return net.Dial("unix", unixSocket)
+			},
+		}
+
+		client = &http.Client{
+			Transport: transport,
+		}
+	} else {
+		// Regular TCP HTTP client
+		if httpClient == nil {
+			client = http.DefaultClient
+		} else {
+			client = httpClient
+		}
 	}
+
 	return &SlicerClient{
-		httpClient: httpClient,
+		httpClient: client,
 		baseURL:    baseURL,
 		token:      token,
 		userAgent:  userAgent,
+		unixSocket: unixSocket,
 	}
 }
 
@@ -109,31 +144,6 @@ func (c *SlicerClient) GetHostGroups(ctx context.Context) ([]SlicerHostGroup, er
 	}
 
 	return hostGroups, nil
-}
-
-// GetInfo fetches server version information from the /info endpoint
-func (c *SlicerClient) GetInfo(ctx context.Context) (*SlicerInfo, error) {
-	res, err := c.makeJSONRequestWithContext(ctx, http.MethodGet, "/info", nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var body []byte
-	if res.Body != nil {
-		defer res.Body.Close()
-		body, _ = io.ReadAll(res.Body)
-	}
-
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("API request failed: %s - %s", res.Status, string(body))
-	}
-
-	var info SlicerInfo
-	if err := json.Unmarshal(body, &info); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
-	}
-
-	return &info, nil
 }
 
 // GetHostGroupNodes fetches nodes for a specific host group
@@ -734,6 +744,31 @@ func (c *SlicerClient) CreateVM(ctx context.Context, groupName string, request S
 	}
 
 	return &created, nil
+}
+
+// GetInfo fetches server version information from the /info endpoint
+func (c *SlicerClient) GetInfo(ctx context.Context) (*SlicerInfo, error) {
+	res, err := c.makeJSONRequestWithContext(ctx, http.MethodGet, "/info", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var body []byte
+	if res.Body != nil {
+		defer res.Body.Close()
+		body, _ = io.ReadAll(res.Body)
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API request failed: %s - %s", res.Status, string(body))
+	}
+
+	var info SlicerInfo
+	if err := json.Unmarshal(body, &info); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return &info, nil
 }
 
 // GetAgentHealth fetches the health of the agent
